@@ -10,6 +10,23 @@ import subprocess
 import sys
 import time
 
+INI_FileName = 'xTLHostingWatchdog.ini'
+INI_Content = """[Watchdog.Config]
+ServerIP=127.0.0.1
+ServerPort=7778
+UnrealPath=./ucc.exe
+UnrealArguments=server nyleve.unr?Mutator=DZMapM.DZMapMutator?Game=UnrealShare.CoopGame?Difficulty=6 ini=svr.ini log=server.log -timestamplog
+
+[Watchdog.Tweaks]
+CheckDelay=5.0
+SocketTimeout=0.5
+StartupDelay=10.0
+MainLoopDelay=5.0"""
+
+if not os.path.exists(INI_FileName):
+	with open(INI_FileName, 'w') as INI_File:
+		INI_File.write(INI_Content)
+
 config = configparser.ConfigParser()
 config.read('xTLHostingWatchdog.ini')
 
@@ -33,8 +50,10 @@ def signal_handler(signum, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
-signal.signal(signal.SIGHUP, signal_handler)
-signal.signal(signal.SIGQUIT, signal_handler)
+if hasattr(signal, 'SIGHUP'):
+	signal.signal(signal.SIGHUP, signal_handler)
+if hasattr(signal, 'SIGQUIT'):
+	signal.signal(signal.SIGQUIT, signal_handler)
 
 while True:
 	time.sleep(MainLoopDelay)
